@@ -1,0 +1,41 @@
+# ---- Android ----
+android/.gradle/
+android/build/
+android/app/build/
+android/captures/
+android/.cxx/
+# Machine-specific SDK path
+local.properties
+*.iml
+.kotlin/
+
+# Signing material: never commit
+*.jks
+*.keystore
+keystore.properties
+
+# ---- Web ----
+node_modules/
+web/dist/
+web/.vite/
+*.local
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# ---- Editors & OS ----
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# ---- Logs ----
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# ---- Tooling scratch ----
+.playwright-mcp/
+.impeccable/
