@@ -85,7 +85,7 @@ export function WaitlistForm({ id, buttonLabel, successTitle, successBody, footn
 
   useEffect(() => {
     if (joined) {
-      const t = setTimeout(() => successRef.current?.focus(), 350);
+      const t = setTimeout(() => successRef.current?.focus({ preventScroll: true }), 350);
       return () => clearTimeout(t);
     }
   }, [joined]);
