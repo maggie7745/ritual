@@ -15,20 +15,30 @@ const EASE = [0.16, 1, 0.3, 1] as const;
  * 3. Fallback — localStorage only. Fine for previewing, useless in prod;
  *    this is what runs if neither env var is configured.
  */
+async function insertToSupabase(url: string, key: string, email: string): Promise<Response> {
+  return fetch(`${url}/rest/v1/waitlist`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: key,
+      Authorization: `Bearer ${key}`,
+      Prefer: "return=minimal",
+    },
+    body: JSON.stringify({ email }),
+  });
+}
+
 async function submitEmail(email: string): Promise<void> {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
   const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
   if (supabaseUrl && supabaseKey) {
-    const res = await fetch(`${supabaseUrl}/rest/v1/waitlist`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        apikey: supabaseKey,
-        Authorization: `Bearer ${supabaseKey}`,
-        Prefer: "return=minimal",
-      },
-      body: JSON.stringify({ email }),
-    });
+    let res = await insertToSupabase(supabaseUrl, supabaseKey, email);
+    // A transient 5xx (e.g. a cold-starting project) gets one quiet retry
+    // before we bother the visitor with an error.
+    if (!res.ok && res.status >= 500) {
+      await new Promise((r) => setTimeout(r, 800));
+      res = await insertToSupabase(supabaseUrl, supabaseKey, email);
+    }
     // 409 = unique constraint hit (already on the list) — treat as success,
     // not an error the visitor needs to see.
     if (!res.ok && res.status !== 409) {
