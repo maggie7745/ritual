@@ -72,11 +72,47 @@ npm install
 npm run dev
 ```
 
-**Collecting emails.** By default the form writes to `localStorage` only — nothing leaves the browser. To collect real signups, set an endpoint that accepts `POST {email}` as JSON:
-```bash
-# web/.env
-VITE_WAITLIST_ENDPOINT=https://your-endpoint.example/subscribe
-```
+**Collecting emails.** By default the form writes to `localStorage` only — nothing leaves the browser. In production it writes straight to a Supabase table.
+
+1. Create a free project at [supabase.com](https://supabase.com).
+2. In the SQL editor, run:
+   ```sql
+   create table waitlist (
+     id uuid primary key default gen_random_uuid(),
+     email text not null unique,
+     created_at timestamptz not null default now()
+   );
+
+   alter table waitlist enable row level security;
+
+   -- Anyone can add their email; nobody can read the list back out
+   -- through the public API (only from the Supabase dashboard).
+   create policy "anon can insert" on waitlist
+     for insert to anon
+     with check (true);
+   ```
+3. Project Settings → API → copy the Project URL and the `anon` public key.
+4. Set them as env vars (locally in `web/.env`, and in your host's dashboard for production):
+   ```bash
+   VITE_SUPABASE_URL=https://your-project.supabase.co
+   VITE_SUPABASE_ANON_KEY=your-anon-key
+   ```
+5. View signups any time in the Supabase dashboard under Table Editor → `waitlist`.
+
+See `web/.env.example` for the full list of options, including a generic-endpoint fallback if you'd rather not use Supabase.
+
+---
+
+## Deploying `web/`
+
+Hosted for free on [Cloudflare Pages](https://pages.cloudflare.com), connected directly to this GitHub repo:
+
+- **Root directory:** `web`
+- **Build command:** `npm run build`
+- **Output directory:** `dist`
+- **Environment variables:** `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (same values as above)
+
+Every push to `main` redeploys automatically.
 
 ---
 
