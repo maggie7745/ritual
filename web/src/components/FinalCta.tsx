@@ -31,7 +31,7 @@ export function FinalCta() {
               intention.
             </p>
           </Reveal>
-          <Reveal delay={0.5} className="mt-10 w-full max-w-md text-left">
+          <Reveal delay={0.5} className="mt-10 w-full max-w-md">
             <WaitlistForm
               id="waitlist-final"
               buttonLabel="Join Ritual"

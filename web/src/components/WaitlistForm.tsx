@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { useWaitlist } from "../context/WaitlistContext";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
@@ -75,35 +76,37 @@ type Props = {
 };
 
 export function WaitlistForm({ id, buttonLabel, successTitle, successBody, footnote }: Props) {
+  const { joined, markJoined } = useWaitlist();
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "pending" | "done">("idle");
+  const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const reduce = useReducedMotion();
   const successRef = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
-    if (status === "done") {
+    if (joined) {
       const t = setTimeout(() => successRef.current?.focus(), 350);
       return () => clearTimeout(t);
     }
-  }, [status]);
+  }, [joined]);
 
   async function submit(e: FormEvent) {
     e.preventDefault();
-    if (status === "pending") return;
+    if (pending) return;
     const trimmed = email.trim();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
       setError("Enter a valid email address.");
       return;
     }
     setError(null);
-    setStatus("pending");
+    setPending(true);
     try {
       await submitEmail(trimmed);
-      setStatus("done");
+      markJoined();
     } catch {
-      setStatus("idle");
       setError("Something went wrong. Please try again.");
+    } finally {
+      setPending(false);
     }
   }
 
@@ -111,11 +114,11 @@ export function WaitlistForm({ id, buttonLabel, successTitle, successBody, footn
     <div className="min-h-28">
       {/* Permanent live region so the announcement always lands */}
       <div aria-live="polite" className="sr-only">
-        {status === "done" ? `${successTitle} ${successBody ?? ""}` : ""}
+        {joined ? `${successTitle} ${successBody ?? ""}` : ""}
       </div>
 
       <AnimatePresence mode="wait">
-        {status === "done" ? (
+        {joined ? (
           <motion.div
             key="done"
             initial={reduce ? { opacity: 0 } : { opacity: 0, filter: "blur(6px)" }}
@@ -140,7 +143,7 @@ export function WaitlistForm({ id, buttonLabel, successTitle, successBody, footn
             onSubmit={submit}
             exit={reduce ? { opacity: 0 } : { opacity: 0, filter: "blur(6px)" }}
             transition={{ duration: 0.2, ease: EASE }}
-            className="max-w-md"
+            className="max-w-md text-left"
           >
             <label htmlFor={id} className="sr-only">
               Email address
@@ -162,10 +165,10 @@ export function WaitlistForm({ id, buttonLabel, successTitle, successBody, footn
               />
               <button
                 type="submit"
-                disabled={status === "pending"}
+                disabled={pending}
                 className="shrink-0 self-center whitespace-nowrap py-2 pl-2 text-sm tracking-wide text-ivory/80 transition-[color,opacity,transform] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:text-ivory active:scale-[0.97] disabled:opacity-50"
               >
-                {status === "pending" ? "Joining…" : buttonLabel}
+                {pending ? "Joining…" : buttonLabel}
                 <span
                   aria-hidden="true"
                   className="ml-2 inline-block transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-focus-within:translate-x-0.5"

@@ -1,7 +1,6 @@
 const links = [
   { label: "Privacy", href: "#" },
   { label: "Terms", href: "#" },
-  { label: "Instagram", href: "https://instagram.com", external: true },
 ];
 
 export function Footer() {
@@ -17,7 +16,6 @@ export function Footer() {
             <a
               key={l.label}
               href={l.href}
-              {...(l.external ? { target: "_blank", rel: "noreferrer" } : {})}
               className="group relative text-sm text-stone transition-colors duration-200 hover:text-ivory"
             >
               {l.label}

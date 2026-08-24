@@ -1,3 +1,4 @@
+import { WaitlistProvider } from "./context/WaitlistContext";
 import { Nav } from "./components/Nav";
 import { Hero } from "./components/Hero";
 import { Philosophy } from "./components/Philosophy";
@@ -9,17 +10,19 @@ import { Footer } from "./components/Footer";
 
 export default function App() {
   return (
-    <div className="grain">
-      <Nav />
-      <main>
-        <Hero />
-        <Philosophy />
-        <TheRitual />
-        <Preview />
-        <Identity />
-        <FinalCta />
-      </main>
-      <Footer />
-    </div>
+    <WaitlistProvider>
+      <div className="grain">
+        <Nav />
+        <main>
+          <Hero />
+          <Philosophy />
+          <TheRitual />
+          <Preview />
+          <Identity />
+          <FinalCta />
+        </main>
+        <Footer />
+      </div>
+    </WaitlistProvider>
   );
 }

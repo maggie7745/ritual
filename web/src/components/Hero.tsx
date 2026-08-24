@@ -208,7 +208,7 @@ export function Hero() {
               buttonLabel="Join the waitlist"
               successTitle="You're in."
               successBody="Your ritual begins soon."
-              footnote="A daily practice app. One email when it opens, nothing else."
+              footnote="A habit tracker for people who show up. One email when it opens, nothing else."
             />
           </motion.div>
         </div>
